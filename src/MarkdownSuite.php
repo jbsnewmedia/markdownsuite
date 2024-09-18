@@ -313,6 +313,8 @@ class MarkdownSuite
         $this->contentData = $this->scanContentDirectory(
             [
                 'path' => $path,
+                'parent_key' => '',
+                'key' => 'home',
             ]
         );
 

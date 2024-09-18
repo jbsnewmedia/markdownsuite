@@ -72,6 +72,27 @@ class MarkdownSuite
         return '';
     }
 
+    protected function parseContentImages(string $content, string $path):string
+    {
+        $pattern = '/<img[^>]+src=["\']?([^"\'>\s]+)["\']?/i';
+
+        $matches = [];
+        preg_match_all($pattern, $content, $matches);
+
+        if (isset($matches[1])) {
+            foreach ($matches[1] as $match) {
+                $content = str_replace('src="' . $match . '"', 'src="' . $path . '/' . $match . '"', $content);
+            }
+        }
+
+        return $content;
+    }
+
+    public function getParser():CommonMarkConverter|\Parsedown|\ParsedownExtra|null
+    {
+        return $this->parser;
+    }
+
     public function getSuiteData():array
     {
         return $this->suiteData;
@@ -106,14 +127,14 @@ class MarkdownSuite
                         'path' => $scanDir.'/'.$dir,
                         'content' => $fileContent,
                         'content_parsed' => $this->parseContent($fileContent),
-                        'content_sub' => $this->scanSubDirectory($scanDir.'/'.$dir),
+                        'content_sub' => $this->scanSubDirectory($scanDir.'/'.$dir, $this->parseUrlPath($dir)),
                     ];
                 }
             }
         }
     }
 
-    protected function scanSubDirectory(string $scanDir):array
+    protected function scanSubDirectory(string $scanDir, string $key):array
     {
         $dirs = scandir($scanDir);
         $dirs = array_diff($dirs, ['.', '..']);
@@ -131,11 +152,12 @@ class MarkdownSuite
                         if ($urlKey !== 'undefined') {
                             $result[$this->parseUrlPath($dir)] = [
                                 'key' => $this->parseUrlPath($dir),
+                                'parent_key' => $key,
                                 'header' => $header,
                                 'active' => false,
                                 'path' => $scanDir.'/'.$dir,
                                 'content' => $fileContent,
-                                'content_parsed' => $this->parseContent($fileContent),
+                                'content_parsed' => $this->parseContentImages($this->parseContent($fileContent), $key.'/'.$this->parseUrlPath($dir)),
                                 'content_sub' => [],
                             ];
                         }
@@ -156,7 +178,7 @@ class MarkdownSuite
         $result = [];
         foreach ($files as $file) {
             $markdownFile = $scanDir.'/'.$file;
-			$fileWithoutExtension = pathinfo($file, PATHINFO_FILENAME);
+            $fileWithoutExtension = pathinfo($file, PATHINFO_FILENAME);
             if ((file_exists($markdownFile))&&(!is_dir($markdownFile))) {
                 $fileContent = file_get_contents($markdownFile);
                 $headers = $this->parseHashLines($fileContent);
@@ -164,12 +186,12 @@ class MarkdownSuite
                     foreach ($headers as $header) {
                         $result[$this->parseUrlPath($fileWithoutExtension)] = [
                             'header' => $header['header'],
-							'key' => $this->parseUrlPath($fileWithoutExtension),
-							'path' => $scanDir.'/'.$fileWithoutExtension,
+                            'key' => $this->parseUrlPath($fileWithoutExtension),
+                            'path' => $scanDir.'/'.$fileWithoutExtension,
                             'anchor' => $header['anchor'],
                             'level' => $header['level'],
                             'content' => $header['content'],
-                            'content_parsed' => $header['content_parsed'],
+                            'content_parsed' => $this->parseContentImages($header['content_parsed'], $data['parent_key'].'/'.$data['key'].'/'.$this->parseUrlPath($fileWithoutExtension)),
                             'content_sub' => $header['content_sub'],
                         ];
                     }
@@ -182,6 +204,7 @@ class MarkdownSuite
 
     public function parseFirstHashLine(string $content):?string
     {
+        $matches = [];
         if (preg_match('/^\s*#.*$/m', $content, $matches)) {
             return trim(substr(trim($matches[0]), 1));
         }
@@ -191,6 +214,7 @@ class MarkdownSuite
 
     public function parseHashLines(string $content):?array
     {
+        $matches = [];
         if (preg_match_all('/^\s*(###|##)\s*(.*)$/m', $content, $matches, PREG_OFFSET_CAPTURE)) {
             if ((!isset($matches[2])) || (count($matches[2]) === 0)) {
                 return null;
@@ -306,76 +330,76 @@ class MarkdownSuite
         return $header;
     }
 
-	public function isAllowedFile(string $path, array $allowedFiles):bool
-	{
-		$path = strtolower($path);
-		$fileInfo = pathinfo($path);
-		if (isset($fileInfo['extension'])) {
-			if (in_array($fileInfo['extension'], $allowedFiles)) {
-				return true;
-			}
-		}
+    public function isAllowedFile(string $path, array $allowedFiles):bool
+    {
+        $path = strtolower($path);
+        $fileInfo = pathinfo($path);
+        if (isset($fileInfo['extension'])) {
+            if (in_array($fileInfo['extension'], $allowedFiles)) {
+                return true;
+            }
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	public function sendFile(string $path):void
-	{
-		if ($path === '') {
-			$this->setHome($this->getDirectory().'/home');
+    public function sendFile(string $path):void
+    {
+        if ($path === '') {
+            $this->setHome($this->getDirectory().'/home');
 
-			return;
-		}
+            return;
+        }
 
-		$pathArray = explode('/', $path);
-		if ((count($pathArray) <= 2)||(count($pathArray) > 4)||(!isset($this->suiteData[$pathArray[0]]['content_sub'][$pathArray[1]]))) {
-			$this->die404();
-		}
+        $pathArray = explode('/', $path);
+        if ((count($pathArray) <= 2)||(count($pathArray) > 4)||(!isset($this->suiteData[$pathArray[0]]['content_sub'][$pathArray[1]]))) {
+            $this->die404();
+        }
 
-		$dirDetails=$this->suiteData[$pathArray[0]]['content_sub'][$pathArray[1]];
+        $dirDetails=$this->suiteData[$pathArray[0]]['content_sub'][$pathArray[1]];
 
-		if (count($pathArray) === 3) {
-			$file=$dirDetails['path'].'/readme/'.$pathArray[2];
-			if (!file_exists($file)) {
-				$this->die404();
-			}
+        if (count($pathArray) === 3) {
+            $file=$dirDetails['path'].'/readme/'.$pathArray[2];
+            if (!file_exists($file)) {
+                $this->die404();
+            }
 
-			$this->dieFile($file);
-		}
+            $this->dieFile($file);
+        }
 
-		if (count($pathArray) === 4) {
-			$fileDetails=$this->scanContentDirectory(
-				$dirDetails
-			);
+        if (count($pathArray) === 4) {
+            $fileDetails=$this->scanContentDirectory(
+                $dirDetails
+            );
 
-			if (!isset($fileDetails[$pathArray[2]])) {
-				$this->die404();
-			}
+            if (!isset($fileDetails[$pathArray[2]])) {
+                $this->die404();
+            }
 
-			$file=$fileDetails[$pathArray[2]]['path'].'/'.$pathArray[3];
-			if (!file_exists($file)) {
-				$this->die404();
-			}
+            $file=$fileDetails[$pathArray[2]]['path'].'/'.$pathArray[3];
+            if (!file_exists($file)) {
+                $this->die404();
+            }
 
-			$this->dieFile($file);
-		}
+            $this->dieFile($file);
+        }
 
-		$this->die404();
-	}
+        $this->die404();
+    }
 
-	public function die404():void
-	{
-		header('HTTP/1.0 404 Not Found');
-		die('404 Not Found');
-	}
+    public function die404():void
+    {
+        header('HTTP/1.0 404 Not Found');
+        die('404 Not Found');
+    }
 
-	public function dieFile(string $file):void
-	{
-		header('Content-Type: '.mime_content_type($file));
-		header('Content-Length: '.filesize($file));
-		readfile($file);
-		die();
-	}
+    public function dieFile(string $file):void
+    {
+        header('Content-Type: '.mime_content_type($file));
+        header('Content-Length: '.filesize($file));
+        readfile($file);
+        die();
+    }
 
     public function dump():void
     {

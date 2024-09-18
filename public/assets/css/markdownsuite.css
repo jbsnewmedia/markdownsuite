@@ -1,0 +1,154 @@
+body {
+    overflow-y: scroll;
+    position: relative;
+}
+
+header {
+    height: 4rem;
+}
+
+main {
+    margin-top: 6rem;
+    margin-bottom: 5.5rem;
+}
+
+.fs-7 {
+    font-size: 0.9rem !important;
+}
+
+.fs-8 {
+    font-size: 0.75rem !important;
+}
+
+.btn-toggle {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.65);
+    background-color: transparent;
+    border: 0;
+    transition: color 0.35s ease, background-color 0.35s ease;
+}
+
+.btn-toggle:hover,
+.btn-toggle:focus {
+    color: rgba(0, 0, 0, 0.85);
+    background-color: #eee;
+}
+
+.btn-toggle::after {
+    margin-left: auto;
+    content: '';
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    /* !Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. */
+    background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"%3E%3Cpath d="M201.4 137.4c12.5-12.5 32.8-12.5 45.3 0l160 160c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L224 205.3 86.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l160-160z"%3E%3C/path%3E%3C/svg%3E');
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: transform 0.35s ease;
+    transform-origin: 50% 50%;
+    transform: rotate(90deg);
+}
+
+.btn-toggle[aria-expanded="true"]::after {
+    transform: rotate(180deg);
+}
+
+.btn-toggle-nav a {
+    display: inline-flex;
+    padding: 0.1875rem 0.5rem 0.1875rem 0.75rem;
+    margin-top: 0.125rem;
+    text-decoration: none;
+    transition: background-color 0.35s ease;
+}
+
+.btn-toggle-nav a:hover,
+.btn-toggle-nav a:focus {
+    background-color: #eee;
+}
+
+.navbar-toggler {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    width: 30px;
+    height: 30px;
+}
+
+.navbar-toggler:hover,
+.navbar-toggler:focus {
+    box-shadow: 0 0 0 0.1rem;
+}
+
+.navbar-toggler-icon {
+    width: 12px;
+    height: 20px;
+}
+
+#navigation_end .nav-link {
+    margin: 0;
+    padding: 0;
+    transition: color 0.35s ease;
+}
+
+#navigation_end .nav-link:hover,
+#navigation_end .nav-link:focus,
+#navigation_end .nav-link.active {
+    color: #000;
+}
+
+.collapse-item.active {
+    font-weight: 600;
+}
+
+.link-secondary.active {
+    color: var(--bs-black) !important;
+}
+
+@media (min-width: 992px) {
+    #navigation_start,
+    #navigation_end {
+        width: 218px !important;
+        overflow-y: auto;
+        height: calc(100vh - 11.5rem);
+        position: fixed;
+        top: 8.5rem;
+    }
+
+    .nav-header {
+        width: 218px !important;
+        position: fixed;
+    }
+}
+
+@media (min-width: 1200px) {
+    #navigation_start,
+    #navigation_end,
+    .nav-header {
+        width: 164px !important;
+    }
+}
+
+@media (min-width: 1400px) {
+    #navigation_start,
+    #navigation_end,
+    .nav-header {
+        width: 195px !important;
+    }
+}
+
+#btnbacktotop {
+    position: fixed;
+    bottom: 45px;
+    right: 20px;
+    display: none;
+    z-index: 9999;
+    height:50px;
+    width:50px;
+}
+
+#btnbacktotop svg {
+    fill: #fff;
+}

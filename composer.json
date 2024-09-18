@@ -1,0 +1,30 @@
+{
+    "name": "jbsnewmedia/markdownsuite",
+    "description": "Markdown Suite for documentation and help pages with Bootstrap 5. Filebased with Parsedown and CommonMark on PHP 8.1.",
+    "type": "project",
+    "license": "MIT",
+    "keywords": ["markdown", "bootstrap", "parsedown", "commonmark", "documentation", "documentation-suite", "markdown-suite", "help", "help-suite"],
+    "authors": [
+        {
+            "name": "Juergen Schwind - JBS New Media GmbH",
+            "email": "juergen.schwind@jbs-newmedia.de",
+            "homepage": "https://jbs-newmedia.de"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "twbs/bootstrap": "^5.3",
+        "erusev/parsedown": "^1.7",
+        "erusev/parsedown-extra": "^0.8.1",
+        "league/commonmark": "^2.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "JBSNewMedia\\MarkdownSuite\\": "jbsnewmedia/markdownsuite/src/"
+        }
+    },
+    "support": {
+        "issues": "https://github.com/jbsnewmedia/markdownsuite/issues",
+        "source": "https://github.com/jbsnewmedia/markdownsuite"
+    }
+}

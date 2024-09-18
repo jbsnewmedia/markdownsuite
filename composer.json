@@ -20,7 +20,7 @@
     },
     "autoload": {
         "psr-4": {
-            "JBSNewMedia\\MarkdownSuite\\": "jbsnewmedia/markdownsuite/src/"
+            "JBSNewMedia\\MarkdownSuite\\": "src/"
         }
     },
     "support": {

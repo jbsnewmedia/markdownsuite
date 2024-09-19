@@ -83,7 +83,7 @@ $markdownSuite->setPath($path);
                             <?php foreach ($details1['content_sub'] as $key2 => $details2): ?>
 
                                 <li class="collapse-item">
-                                    <a href="<?php echo $key1 . '/'. $key2 ?>/" class="collapse-item<?php if($details2['active'] === true):?> active<?php endif;?> link-dark w-100"><?php echo $details2['header']?></a>
+                                    <a href="<?php echo $key1 . '/'. $key2 ?>" class="collapse-item<?php if($details2['active'] === true):?> active<?php endif;?> link-dark w-100"><?php echo $details2['header']?></a>
                                 </li>
 
                             <?php endforeach; ?>

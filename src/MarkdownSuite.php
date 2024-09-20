@@ -21,7 +21,7 @@ class MarkdownSuite
 
     protected string $parserSelected = '';
 
-    public static string $version = '1.0.0';
+    public static string $version = '1.0.1';
 
     public function __construct(string $parser = 'commonmark')
     {
@@ -72,21 +72,31 @@ class MarkdownSuite
         return '';
     }
 
-    protected function parseContentImages(string $content, string $path):string
-    {
-        $pattern = '/<img[^>]+src=["\']?([^"\'>\s]+)["\']?/i';
+	protected function parseContentImages(string $content, string $path): string
+	{
+		$pattern = '/<img([^>]+)src=["\']?([^"\'>\s]+)["\']?/i';
+		$matches = [];
+		preg_match_all($pattern, $content, $matches);
 
-        $matches = [];
-        preg_match_all($pattern, $content, $matches);
+		if (isset($matches[0])) {
+			foreach ($matches[0] as $index => $fullMatch) {
+				$imgAttributes = $matches[1][$index];
+				$imgSrc = $matches[2][$index];
 
-        if (isset($matches[1])) {
-            foreach ($matches[1] as $match) {
-                $content = str_replace('src="' . $match . '"', 'src="' . $path . '/' . $match . '"', $content);
-            }
-        }
+				if (strpos($imgAttributes, 'class=') !== false) {
+					$newImgTag = str_replace('class="', 'class="img-fluid responsive-img ', $fullMatch);
+				} else {
+					$newImgTag = str_replace('<img', '<img class="img-fluid responsive-img"', $fullMatch);
+				}
 
-        return $content;
-    }
+				$newImgTag = str_replace('src="' . $imgSrc . '"', 'src="' . $path . '/' . $imgSrc . '"', $newImgTag);
+
+				$content = str_replace($fullMatch, $newImgTag, $content);
+			}
+		}
+
+		return $content;
+	}
 
     public function getParser():CommonMarkConverter|\Parsedown|\ParsedownExtra|null
     {

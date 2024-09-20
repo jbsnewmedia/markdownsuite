@@ -1,6 +1,5 @@
 document.addEventListener("DOMContentLoaded", function() {
     const backToTopBtn = document.getElementById("btnbacktotop");
-    console.log(backToTopBtn)
     if (backToTopBtn) {
         window.addEventListener("scroll", function () {
             if (window.scrollY > 50) {

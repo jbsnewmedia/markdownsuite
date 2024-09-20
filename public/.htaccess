@@ -1,0 +1,8 @@
+RewriteEngine On
+
+RewriteRule ^favicon.ico$ assets/img/favicon.ico [L]
+
+RewriteCond %{REQUEST_URI} !^/changelog/index\.php$
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?path=$1 [L,QSA]

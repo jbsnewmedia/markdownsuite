@@ -21,7 +21,7 @@ class MarkdownSuite
 
     protected string $parserSelected = '';
 
-    public static string $version = '1.0.1';
+    public static string $version = '1.0.0';
 
     public function __construct(string $parser = 'commonmark')
     {

@@ -72,31 +72,31 @@ class MarkdownSuite
         return '';
     }
 
-	protected function parseContentImages(string $content, string $path): string
-	{
-		$pattern = '/<img([^>]+)src=["\']?([^"\'>\s]+)["\']?/i';
-		$matches = [];
-		preg_match_all($pattern, $content, $matches);
+    protected function parseContentImages(string $content, string $path): string
+    {
+        $pattern = '/<img([^>]+)src=["\']?([^"\'>\s]+)["\']?/i';
+        $matches = [];
+        preg_match_all($pattern, $content, $matches);
 
-		if (isset($matches[0])) {
-			foreach ($matches[0] as $index => $fullMatch) {
-				$imgAttributes = $matches[1][$index];
-				$imgSrc = $matches[2][$index];
+        if (isset($matches[0])) {
+            foreach ($matches[0] as $index => $fullMatch) {
+                $imgAttributes = $matches[1][$index];
+                $imgSrc = $matches[2][$index];
 
-				if (strpos($imgAttributes, 'class=') !== false) {
-					$newImgTag = str_replace('class="', 'class="img-fluid responsive-img ', $fullMatch);
-				} else {
-					$newImgTag = str_replace('<img', '<img class="img-fluid responsive-img"', $fullMatch);
-				}
+                if (strpos($imgAttributes, 'class=') !== false) {
+                    $newImgTag = str_replace('class="', 'class="img-fluid responsive-img ', $fullMatch);
+                } else {
+                    $newImgTag = str_replace('<img', '<img class="img-fluid responsive-img"', $fullMatch);
+                }
 
-				$newImgTag = str_replace('src="' . $imgSrc . '"', 'src="' . $path . '/' . $imgSrc . '"', $newImgTag);
+                $newImgTag = str_replace('src="' . $imgSrc . '"', 'src="' . $path . '/' . $imgSrc . '"', $newImgTag);
 
-				$content = str_replace($fullMatch, $newImgTag, $content);
-			}
-		}
+                $content = str_replace($fullMatch, $newImgTag, $content);
+            }
+        }
 
-		return $content;
-	}
+        return $content;
+    }
 
     public function getParser():CommonMarkConverter|\Parsedown|\ParsedownExtra|null
     {
@@ -204,6 +204,11 @@ class MarkdownSuite
                             'content_parsed' => $this->parseContentImages($header['content_parsed'], $data['parent_key'].'/'.$data['key'].'/'.$this->parseUrlPath($fileWithoutExtension)),
                             'content_sub' => $header['content_sub'],
                         ];
+                        if ($result[$this->parseUrlPath($fileWithoutExtension)]['content_sub']!==[]) {
+                            foreach ($result[$this->parseUrlPath($fileWithoutExtension)]['content_sub'] as $key => $values) {
+                                $result[$this->parseUrlPath($fileWithoutExtension)]['content_sub'][$key]['content_parsed'] = $this->parseContentImages($values['content_parsed'], $data['parent_key'].'/'.$data['key'].'/'.$this->parseUrlPath($fileWithoutExtension));
+                            }
+                        }
                     }
                 }
             }
@@ -289,16 +294,25 @@ class MarkdownSuite
     public function setPath(string $path):void
     {
         if ($path === '') {
-            $this->setHome($this->getDirectory().'/home');
-
-            return;
+            $pathArray[0] = key($this->suiteData);
+            if ((isset($this->suiteData[$pathArray[0]]['content_sub'])) && ($this->suiteData[$pathArray[0]]['content_sub']!==[])) {
+                $pathArray[1]=key($this->suiteData[$pathArray[0]]['content_sub']);
+            }
+        } else {
+            $pathArray = explode('/', $path);
         }
+        if ((count($pathArray) === 1) || ((count($pathArray) === 2) || ($pathArray[1] === ''))) {
+            if (!isset($this->suiteData[$pathArray[0]])) {
+                $this->die404();
+            }
 
-        $pathArray = explode('/', $path);
-        if ((count($pathArray) !== 2) || ($pathArray[1] === '')) {
-            $this->setHome($this->getDirectory().'/home');
+            if ((!isset($this->suiteData[$pathArray[0]]['content_sub'])) || ($this->suiteData[$pathArray[0]]['content_sub']===[])) {
+                $this->die404();
+            }
 
-            return;
+            if (!isset($this->suiteData[$pathArray[0]]['content_sub'][$pathArray[1]])) {
+                $this->die404();
+            }
         }
 
         if (isset($this->suiteData[$pathArray[0]]['content_sub'][$pathArray[1]])) {
@@ -311,24 +325,6 @@ class MarkdownSuite
                 $this->suiteData[$pathArray[0]]['content_sub'][$pathArray[1]]
             );
         }
-    }
-
-    public function setHome(string $path):self
-    {
-        $this->suiteDataPart = [
-            'path' => '',
-            'key' => '',
-            'content_parsed' => '',
-        ];
-        $this->contentData = $this->scanContentDirectory(
-            [
-                'path' => $path,
-                'parent_key' => '',
-                'key' => 'home',
-            ]
-        );
-
-        return $this;
     }
 
     public function getAnchor(string $header):string
@@ -358,9 +354,7 @@ class MarkdownSuite
     public function sendFile(string $path):void
     {
         if ($path === '') {
-            $this->setHome($this->getDirectory().'/home');
-
-            return;
+            $this->die404();
         }
 
         $pathArray = explode('/', $path);
